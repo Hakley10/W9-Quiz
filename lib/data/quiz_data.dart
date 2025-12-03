@@ -23,7 +23,6 @@ final Quiz mockQuiz = Quiz(
       ],
     ),
 
-    // --- NEW QUESTIONS ---
     Question(
       id: "q3",
       text: "Which language use worldwide?",

@@ -16,17 +16,26 @@ class QuestionScreen extends StatefulWidget {
 class _QuestionScreenState extends State<QuestionScreen> {
   int currentQuestionIndex = 0;
   int score = 0;
-  int? selectedIndex;
+  List<int?> selectedAnswers = [];
 
   void selectAnswer(int i) {
-    setState(() => selectedIndex = i);
+    setState(() {
+      if (selectedAnswers.length <= currentQuestionIndex) {
+        selectedAnswers.add(i);
+      } else {
+        selectedAnswers[currentQuestionIndex] = i;
+      }
+    });
   }
 
   void next() {
     final question = widget.quiz.questions[currentQuestionIndex];
+    final selectedIndex = _getSelectedIndex();
 
-    if (selectedIndex != null && question.answers[selectedIndex!].isCorrect) {
-      score++;
+    if (selectedIndex != null && question.answers[selectedIndex].isCorrect) {
+      if (!_isAnswerAlreadyCounted(currentQuestionIndex)) {
+        score++;
+      }
     }
 
     if (currentQuestionIndex == widget.quiz.questions.length - 1) {
@@ -49,14 +58,37 @@ class _QuestionScreenState extends State<QuestionScreen> {
     } else {
       setState(() {
         currentQuestionIndex++;
-        selectedIndex = null;
       });
     }
+  }
+
+  void previous() {
+    if (currentQuestionIndex > 0) {
+      setState(() {
+        currentQuestionIndex--;
+      });
+    }
+  }
+
+  int? _getSelectedIndex() {
+    return selectedAnswers.length > currentQuestionIndex 
+        ? selectedAnswers[currentQuestionIndex] 
+        : null;
+  }
+
+  bool _isAnswerAlreadyCounted(int questionIndex) {
+    return selectedAnswers.length > questionIndex && 
+           selectedAnswers[questionIndex] != null &&
+           widget.quiz.questions[questionIndex]
+               .answers[selectedAnswers[questionIndex]!].isCorrect;
   }
 
   @override
   Widget build(BuildContext context) {
     final question = widget.quiz.questions[currentQuestionIndex];
+    final selectedIndex = _getSelectedIndex();
+    final totalQuestions = widget.quiz.questions.length;
+    final progress = (currentQuestionIndex + 1) / totalQuestions;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1EA5FC),
@@ -64,25 +96,69 @@ class _QuestionScreenState extends State<QuestionScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          "Question ${currentQuestionIndex + 1}",
+          "Question ${currentQuestionIndex + 1} of $totalQuestions",
           style: const TextStyle(color: Colors.white),
         ),
       ),
       body: Center(
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      QuestionCard(
-        question: question,
-        selectedIndex: selectedIndex,
-        onTap: selectAnswer,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Visual Progress Bar
+            Container(
+              width: 300,
+              margin: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                children: [
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.white,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  const SizedBox(height: 8),
+ 
+                ],
+              ),
+            ),
+
+            QuestionCard(
+              question: question,
+              selectedIndex: selectedIndex,
+              onTap: selectAnswer,
+            ),
+            const SizedBox(height: 20),
+            
+            // Navigation buttons row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Previous button
+                if (currentQuestionIndex > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: AppButton(
+                      text: "Previous",
+                      onPressed: previous,
+                    ),
+                  ),
+                
+                // Next/Submit button
+                AppButton(
+                  text: currentQuestionIndex == totalQuestions - 1 
+                      ? "Submit" 
+                      : "Next",
+                  onPressed: next,
+                ),
+              ],
+            ),
+            const SizedBox(height: 40),
+            
+  
+          ],
+        ),
       ),
-      const SizedBox(height: 20),
-      AppButton(text: "Next", onPressed: next),
-      const SizedBox(height: 40),
-    ],
-  ),
-),
     );
   }
 }
