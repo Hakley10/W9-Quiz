@@ -32,9 +32,9 @@ class QuestionCard extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            ...List.generate(question.answers.length, (i) {
+            ...List.generate(question.choices.length, (i) { 
               return AnswerOption(
-                text: question.answers[i].text,
+                text: question.choices[i].text, 
                 isSelected: selectedIndex == i,
                 onTap: () => onTap(i),
               );

@@ -15,17 +15,17 @@ class Quiz {
 class Question {
   final String id;
   final String text;
-  final List<Answer> answers;
+  final List<Choice> choices;  
 
-  Question({required this.id, required this.text, required this.answers});
+  Question({required this.id, required this.text, required this.choices});
 }
 
-class Answer {
+class Choice { 
   final String id;
   final String text;
   final bool isCorrect;
 
-  Answer({required this.id, required this.text, this.isCorrect = false});
+  Choice({required this.id, required this.text, this.isCorrect = false});
 }
 
 class PlayerSubmission {

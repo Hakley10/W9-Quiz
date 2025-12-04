@@ -16,27 +16,34 @@ class QuestionScreen extends StatefulWidget {
 class _QuestionScreenState extends State<QuestionScreen> {
   int currentQuestionIndex = 0;
   int score = 0;
-  List<int?> selectedAnswers = [];
+  List<int?> selectedChoices = [];
+  List<bool> isCorrectlyAnswered = [];
 
-  void selectAnswer(int i) {
+  void selectChoice(int i) {
     setState(() {
-      if (selectedAnswers.length <= currentQuestionIndex) {
-        selectedAnswers.add(i);
+      if (selectedChoices.length <= currentQuestionIndex) {
+        selectedChoices.add(i);
       } else {
-        selectedAnswers[currentQuestionIndex] = i;
+        selectedChoices[currentQuestionIndex] = i;
       }
+      
+
+      _updateScoreForCurrentQuestion();
     });
   }
 
   void next() {
-    final question = widget.quiz.questions[currentQuestionIndex];
-    final selectedIndex = _getSelectedIndex();
 
-    if (selectedIndex != null && question.answers[selectedIndex].isCorrect) {
-      if (!_isAnswerAlreadyCounted(currentQuestionIndex)) {
-        score++;
-      }
+    if (_getSelectedIndex() == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select an answer before proceeding'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
     }
+    
 
     if (currentQuestionIndex == widget.quiz.questions.length - 1) {
       final submission = PlayerSubmission(
@@ -70,17 +77,39 @@ class _QuestionScreenState extends State<QuestionScreen> {
     }
   }
 
-  int? _getSelectedIndex() {
-    return selectedAnswers.length > currentQuestionIndex 
-        ? selectedAnswers[currentQuestionIndex] 
-        : null;
+  void _updateScoreForCurrentQuestion() {
+    final selectedIndex = _getSelectedIndex();
+    if (selectedIndex == null) return;
+    
+    final question = widget.quiz.questions[currentQuestionIndex];
+    final isCorrect = question.choices[selectedIndex].isCorrect;
+    
+
+    if (isCorrectlyAnswered.length <= currentQuestionIndex) {
+      isCorrectlyAnswered.add(false);
+    }
+    
+
+    if (isCorrect && !isCorrectlyAnswered[currentQuestionIndex]) {
+
+      setState(() {
+        score++;
+        isCorrectlyAnswered[currentQuestionIndex] = true;
+      });
+    } else if (!isCorrect && isCorrectlyAnswered[currentQuestionIndex]) {
+
+      setState(() {
+        score--;
+        isCorrectlyAnswered[currentQuestionIndex] = false;
+      });
+    }
+
   }
 
-  bool _isAnswerAlreadyCounted(int questionIndex) {
-    return selectedAnswers.length > questionIndex && 
-           selectedAnswers[questionIndex] != null &&
-           widget.quiz.questions[questionIndex]
-               .answers[selectedAnswers[questionIndex]!].isCorrect;
+  int? _getSelectedIndex() {
+    return selectedChoices.length > currentQuestionIndex 
+        ? selectedChoices[currentQuestionIndex] 
+        : null;
   }
 
   @override
@@ -99,6 +128,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
           "Question ${currentQuestionIndex + 1} of $totalQuestions",
           style: const TextStyle(color: Colors.white),
         ),
+
       ),
       body: Center(
         child: Column(
@@ -113,12 +143,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   LinearProgressIndicator(
                     value: progress,
                     backgroundColor: Colors.white,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 2, 239, 37)),
                     minHeight: 8,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  const SizedBox(height: 8),
- 
+
                 ],
               ),
             ),
@@ -126,7 +155,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             QuestionCard(
               question: question,
               selectedIndex: selectedIndex,
-              onTap: selectAnswer,
+              onTap: selectChoice,
             ),
             const SizedBox(height: 20),
             
@@ -154,8 +183,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
               ],
             ),
             const SizedBox(height: 40),
-            
-  
           ],
         ),
       ),

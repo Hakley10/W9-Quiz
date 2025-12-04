@@ -5,13 +5,24 @@ import 'question_screen.dart';
 import 'history_screen.dart';
 import '../widgets/app_button.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Quiz quiz = mockQuiz;
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
 
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  late Quiz quiz;
+
+  @override
+  void initState() {
+    super.initState();
+    quiz = mockQuiz;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1EA5FC),
       body: Center(
