@@ -1,25 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../data/quiz_data.dart';
-import '../../model/quiz.dart';
-import 'question_screen.dart';
-import 'history_screen.dart';
 import '../widgets/app_button.dart';
 
-class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+class WelcomeScreen extends StatelessWidget {
+  final VoidCallback onStartQuiz;
+  final VoidCallback onShowHistory;
 
-  @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
-}
-
-class _WelcomeScreenState extends State<WelcomeScreen> {
-  late Quiz quiz;
-
-  @override
-  void initState() {
-    super.initState();
-    quiz = mockQuiz;
-  }
+  const WelcomeScreen({
+    super.key,
+    required this.onStartQuiz,
+    required this.onShowHistory,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,28 +24,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
             AppButton(
               text: "Start Quiz",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => QuestionScreen(quiz: quiz),
-                  ),
-                );
-              },
+              onPressed: onStartQuiz,
             ),
 
             const SizedBox(height: 20),
 
             AppButton(
               text: "History",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => HistoryScreen(history: quiz.submissions),
-                  ),
-                );
-              },
+              onPressed: onShowHistory,
             ),
           ],
         ),
